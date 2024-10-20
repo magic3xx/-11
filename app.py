@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+import uuid
+from flask import jsonify
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///licenses.db'
@@ -14,7 +16,7 @@ class License(db.Model):
     expiration_date = db.Column(db.DateTime, nullable=False)
     subscription_type = db.Column(db.String(20), nullable=False)
     support_name = db.Column(db.String(50))
-    device_id = db.Column(db.String(50))
+    device_id = db.Column(db.String(50))  # Store the device ID here
     activated = db.Column(db.Boolean, default=False)
     key_type = db.Column(db.String(20), nullable=False)
 
@@ -26,24 +28,26 @@ def index():
 @app.route('/add', methods=['POST'])
 def add_license():
     key = request.form['key']
-    days = int(request.form['days'])
-    hours = int(request.form['hours'])
+    days = int(request.form['days'])  # Get days from input
+    hours = int(request.form['hours'])  # Get hours from input
     subscription_type = request.form['subscription_type']
     support_name = request.form['support_name']
     key_type = request.form['key_type']
 
+    # Calculate expiration date based on subscription type
     expiration_date = datetime.now() + timedelta(days=days, hours=hours)
 
+    # Handle subscription types for weeks, months, and years
     if subscription_type == "1 Week":
         expiration_date += timedelta(weeks=1)
     elif subscription_type == "1 Month":
-        expiration_date += timedelta(weeks=4)
+        expiration_date += timedelta(weeks=4)  # Approximate to 4 weeks
     elif subscription_type == "3 Months":
-        expiration_date += timedelta(weeks=12)
+        expiration_date += timedelta(weeks=12)  # Approximate to 12 weeks
     elif subscription_type == "6 Months":
-        expiration_date += timedelta(weeks=24)
+        expiration_date += timedelta(weeks=24)  # Approximate to 24 weeks
     elif subscription_type == "1 Year":
-        expiration_date += timedelta(weeks=52)
+        expiration_date += timedelta(weeks=52)  # Approximate to 52 weeks
 
     new_license = License(
         key=key,
@@ -58,6 +62,8 @@ def add_license():
 
     return redirect(url_for('index'))
 
+
+
 @app.route('/list_licenses', methods=['GET'])
 def list_licenses():
     licenses = License.query.all()
@@ -69,6 +75,7 @@ def list_licenses():
         'device_id': license.device_id,
         'activated': license.activated
     } for license in licenses])
+
 
 @app.route('/reset_key', methods=['POST'])
 def reset_key():
@@ -104,14 +111,17 @@ def check_key_details():
 
     license = License.query.filter_by(key=key).first()
     if license:
+        # Check if the key is already used on another device
         if license.activated and license.device_id != device_id:
             return jsonify({'valid': False, 'reason': 'This key is already used on another device.'})
 
+        # Activate if not already activated
         if not license.activated:
-            license.device_id = device_id
+            license.device_id = device_id  # Store the device ID here
             license.activated = True
             db.session.commit()
 
+        # Check if the key is active and not expired
         if license.active and license.expiration_date > datetime.now():
             remaining_time = license.expiration_date - datetime.now()
             remaining_minutes = (remaining_time.days * 24 * 60) + (remaining_time.seconds // 60)
@@ -124,7 +134,7 @@ def check_key_details():
                 'remaining_time': {
                     'days': remaining_time.days,
                     'hours': remaining_time.seconds // 3600,
-                    'minutes': remaining_minutes % 60
+                    'minutes': remaining_minutes % 60  # Get remaining minutes after calculating hours
                 }
             })
         else:
@@ -132,11 +142,9 @@ def check_key_details():
 
     return jsonify({'valid': False, 'reason': 'Key not found.'})
 
-# Entry point for uWSGI
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    # Remove the app.run() line
-
-# Expose the app for uWSGI
-app = app
+    app.run(debug=True)  # Allow external access
