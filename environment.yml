@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- flask=2.3.3
+- sqlalchemy=2.0.21
+- pip
+- pip:
+  - flask-sqlalchemy==3.0.5
+  - uuid==1.30
+name: env

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGIC TRADING</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000; /* Black background */
+            margin: 0;
+            padding: 20px;
+            color: #000; /* Default text color white */
+        }
+        h1 {
+            color: red; /* Red color for the text */
+            text-align: center; /* Center the text */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #870808;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #fff; /* Footer text color white */
+            font-size: 14px;
+        }
+        .footer hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>MAGIC TRADING</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Key</th>
+            <th>Active</th>
+            <th>Expiration Date</th>
+            <th>Subscription Type</th>
+            <th>Support Name</th>
+            <th>Device ID</th>
+            <th>Activated</th>
+            <th>Key Type</th>
+            <th>Actions</th>
+        </tr>
+        {% for license in licenses %}
+        <tr>
+            <td>{{ license.id }}</td>
+            <td>{{ license.key }}</td>
+            <td>{{ 'Yes' if license.active else 'No' }}</td>
+            <td>{{ license.expiration_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ license.subscription_type }}</td>
+            <td>{{ license.support_name or 'N/A' }}</td>
+            <td>{{ license.device_id or 'N/A' }}</td>
+            <td>{{ 'Yes' if license.activated else 'No' }}</td>
+            <td>{{ license.key_type }}</td>
+            <td>
+                <a href="{{ url_for('toggle_active', id=license.id) }}">{{ 'Deactivate' if license.active else 'Activate' }}</a> |
+                <a href="{{ url_for('delete_license', id=license.id) }}" onclick="return confirm('Are you sure you want to delete this license?');">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Add New Key</h2>
+<form action="{{ url_for('add_license') }}" method="post">
+    <label for="key">Key:</label>
+    <input type="text" id="key" name="key" required>
+
+    <label for="days">Duration (Days):</label>
+    <input type="number" id="days" name="days" value="0" min="0">
+
+    <label for="hours">Duration (Hours):</label>
+    <input type="number" id="hours" name="hours" value="0" min="0">
+
+    <label for="subscription_type">Subscription Type:</label>
+    <select id="subscription_type" name="subscription_type" required>
+        <option value="1 Week">1 Week</option>
+        <option value="1 Month">1 Month</option>
+        <option value="3 Months">3 Months</option>
+        <option value="6 Months">6 Months</option>
+        <option value="1 Year">1 Year</option>
+        <option value="Free Trial">Free Trial</option>
+        <option value="Hours">Hours</option>
+        <option value="Days">Days</option>
+    </select>
+
+    <label for="support_name">Support Name (optional):</label>
+    <input type="text" id="support_name" name="support_name">
+
+    <label for="key_type">Key Type:</label>
+    <select id="key_type" name="key_type" required>
+        <option value="restricted">Restricted</option>
+        <option value="unrestricted">Unrestricted</option>
+    </select>
+
+    <input type="submit" value="Add Key">
+</form>
+
+    <h2>Reset Key</h2>
+    <form action="{{ url_for('reset_key') }}" method="post">
+        <label for="key">Key:</label>
+        <input type="text" id="key" name="key" required>
+        <input type="submit" value="Reset Key">
+    </form>
+
+    <div class="footer">
+        <hr>
+        <p><strong># MAGIC TRADING #</strong></p>
+        <p>LETS LIFE SURPRISE YOU</p>
+        <p>--------------------------------------------</p>
+    </div>
+</body>
+</html>
