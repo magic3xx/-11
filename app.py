@@ -3,10 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import uuid
 from flask import jsonify
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///licenses.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///licenses.db')
 db = SQLAlchemy(app)
 
 class License(db.Model):
